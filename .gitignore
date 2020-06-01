@@ -1,0 +1,12 @@
+# random files
+*.png
+*.json
+
+# python files
+.venv
+__pycache__
+
+
+# Editor
+.vscode
+.idea
