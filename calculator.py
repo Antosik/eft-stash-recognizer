@@ -55,16 +55,22 @@ def parse_screenshot(screenshot_path, store_path):
         found = len(coords)
 
         if found > 0:
-            for pt in coords:
-                cv.rectangle(screenshot_rgb, pt,
-                             (pt[0] + icon_w, pt[1] + icon_h), (0, 0, 255), 2)
+            if "traderPrice" in item and item["traderPrice"] > item["avgDayPrice"] * 0.9:
+                print("Found {0} of {1}: {2} VS {3}".format(found, item["enName"], item["traderPrice"], item["avgDayPrice"]))
+                for pt in coords:
+                    cv.rectangle(screenshot_rgb, pt,
+                                (pt[0] + icon_w, pt[1] + icon_h), (0, 0, 255), 2)
 
     cv.imwrite('result.png', screenshot_rgb)
 
 
 def search_for_item(screen_rgb, item_icon, threshold=0.75):
+    dst_screen = cv.adaptiveThreshold(cv.cvtColor(screen_rgb, cv.COLOR_BGR2GRAY), 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C,
+                               cv.THRESH_BINARY, 11, 2)
+    dst_icon = cv.adaptiveThreshold(cv.cvtColor(item_icon, cv.COLOR_BGR2GRAY), 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C,
+                               cv.THRESH_BINARY, 11, 2)
     res = cv.matchTemplate(
-        screen_rgb, item_icon, cv.TM_CCOEFF_NORMED)
+        dst_screen, dst_icon, cv.TM_CCOEFF_NORMED)
     loc = np.where(res >= threshold)
 
     return filter_neighbors(list(zip(*loc[::-1])))
